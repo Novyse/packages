@@ -82,6 +82,21 @@ The `NovyseAuth` instance exposes the following modular methods:
 - `auth.qrcode.status(token)`: Poll the status of a pending QR code login attempt.
 - `auth.qrcode.authenticate(token)`: Authorize a QR code session from an already authenticated device.
 
-## Token Manager
+### Token Management
 
-The SDK includes a built-in `TokenManager` that automatically reads, refreshes, and caches the JWT using the provided `storageAdapter`. You do not need to manually pass the `Authorization` header when calling authenticated methods.
+The SDK manages the JWT automatically for you, including refreshing it before it expires. If you need to access the token directly or listen for invalid session events, you can use the `auth.token` methods:
+
+- `auth.token.get()`: Returns a promise that resolves to the valid JWT string, or `null` if the user is not authenticated. It automatically handles token refreshes under the hood.
+- `auth.token.onUpdate(callback)`: Listen for updates to the JWT (e.g. upon successful login or token refresh). Useful for syncing other services like Firebase FCM or WebSocket connections.
+- `auth.token.onInvalidSession(callback)`: Register a hook that will be called if the session is revoked or completely expires. This is the perfect place to redirect the user to the login screen.
+
+```typescript
+// Example: Global invalid session handler
+auth.token.onInvalidSession(() => {
+  console.log("Session expired! Logging out...");
+  // Clear local app state and navigate to Login
+});
+
+// Example: Using the token manually
+const jwt = await auth.token.get();
+```

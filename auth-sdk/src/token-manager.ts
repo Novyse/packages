@@ -11,6 +11,7 @@ export class TokenManager {
   private currentTokenExpiry = 0;
   private tokenRequestPromise: Promise<string | null> | null = null;
   public onInvalidSession?: () => void;
+  private updateListeners: ((token: string | null) => void)[] = [];
 
   constructor(
     private api: AxiosInstance,
@@ -18,9 +19,20 @@ export class TokenManager {
     private storage?: StorageAdapter,
   ) {}
 
+  public onUpdate(callback: (token: string | null) => void) {
+    this.updateListeners.push(callback);
+  }
+
+  private notifyListeners() {
+    for (const listener of this.updateListeners) {
+      listener(this.currentToken);
+    }
+  }
+
   setCurrentToken(token: string | null) {
     this.currentToken = token;
     this.currentTokenExpiry = Date.now() + 15 * 60 * 1000;
+    this.notifyListeners();
   }
 
   async fetchToken(): Promise<string | null> {
@@ -76,9 +88,11 @@ export class TokenManager {
         if (token) {
           this.currentToken = token;
           this.currentTokenExpiry = Date.now() + 15 * 60 * 1000;
+          this.notifyListeners();
         } else {
           this.currentToken = null;
           this.currentTokenExpiry = 0;
+          this.notifyListeners();
           if (this.onInvalidSession) this.onInvalidSession();
         }
         return this.currentToken;
@@ -86,6 +100,7 @@ export class TokenManager {
         if (error.response && error.response.status === 401) {
           this.currentToken = null;
           this.currentTokenExpiry = 0;
+          this.notifyListeners();
           if (this.onInvalidSession) this.onInvalidSession();
         }
         return this.currentToken;
@@ -100,5 +115,6 @@ export class TokenManager {
   clearAuthToken() {
     this.currentToken = null;
     this.currentTokenExpiry = 0;
+    this.notifyListeners();
   }
 }

@@ -33,6 +33,12 @@ export class NovyseAuth {
   public qrcode: QrCode;
   public logout: Logout["logout"];
 
+  public token: {
+    get: () => Promise<string | null>;
+    onUpdate: (callback: (token: string | null) => void) => void;
+    onInvalidSession: (callback: () => void) => void;
+  };
+
   constructor(options: NovyseAuthOptions) {
     const branch = options.branch || "production";
     const platform = options.platform;
@@ -43,6 +49,14 @@ export class NovyseAuth {
       platform,
       options.storageAdapter,
     );
+
+    this.token = {
+      get: this.tokenManager.getAuthToken.bind(this.tokenManager),
+      onUpdate: this.tokenManager.onUpdate.bind(this.tokenManager),
+      onInvalidSession: (callback: () => void) => {
+        this.tokenManager.onInvalidSession = callback;
+      },
+    };
 
     const signinOpaque = new OpaqueSignIn(
       this.api,
