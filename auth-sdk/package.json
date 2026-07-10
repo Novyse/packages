@@ -1,6 +1,6 @@
 {
   "name": "@novyse/auth",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Novyse Authentication Library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
