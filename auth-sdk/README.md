@@ -4,8 +4,28 @@ A standalone authentication client SDK for the Novyse ecosystem. This library ab
 
 ## Installation
 
+**npm**
+
+```bash
+npm install @novyse/auth
+```
+
+**yarn**
+
+```bash
+yarn add @novyse/auth
+```
+
+**bun**
+
 ```bash
 bun add @novyse/auth
+```
+
+**pnpm**
+
+```bash
+pnpm add @novyse/auth
 ```
 
 ## Initialization
