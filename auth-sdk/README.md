@@ -78,8 +78,8 @@ The `NovyseAuth` instance exposes the following modular methods:
 
 ### QR Code Login
 
-- `auth.qrcode.newSession()`: Generate a new QR code session for another device to scan.
-- `auth.qrcode.getStatus(token)`: Poll the status of a pending QR code login attempt.
+- `auth.qrcode.new()`: Generate a new QR code session for another device to scan.
+- `auth.qrcode.status(token)`: Poll the status of a pending QR code login attempt.
 - `auth.qrcode.authenticate(token)`: Authorize a QR code session from an already authenticated device.
 
 ## Token Manager

@@ -8,7 +8,7 @@ export class QrCode {
     private platform: string,
   ) {}
 
-  async newSession() {
+  async new() {
     try {
       const response = await this.api.post("/signin/qrcode/new");
       return { success: true, data: response.data };
@@ -20,7 +20,7 @@ export class QrCode {
     }
   }
 
-  async getStatus(token: string) {
+  async status(token: string) {
     try {
       const response = await this.api.get(`/signin/qrcode/status/${token}`, {
         headers: { "x-platform": this.platform },
