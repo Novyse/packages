@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_opaque/flutter_opaque.dart' as opaque;
 
 import '../signup/opaque.dart';
@@ -18,7 +19,7 @@ class FlutterOpaqueClient implements OpaqueClient {
       password: utf8.encode(password),
     );
     return OpaqueRegistrationStart(
-      clientRegistrationState: _encodeInt(result.stateId.toInt()),
+      clientRegistrationState: _encode(utf8.encode(result.stateId.toString())),
       registrationRequest: _encode(result.registrationRequest),
     );
   }
@@ -31,7 +32,7 @@ class FlutterOpaqueClient implements OpaqueClient {
     required String serverIdentity,
   }) async {
     final result = await opaque.clientRegistrationFinish(
-      stateId: _decodeInt(clientRegistrationState),
+      stateId: _decodeStateId(clientRegistrationState),
       password: utf8.encode(password),
       registrationResponse: _decode(registrationResponse),
     );
@@ -44,7 +45,7 @@ class FlutterOpaqueClient implements OpaqueClient {
       password: utf8.encode(password),
     );
     return OpaqueLoginStart(
-      clientLoginState: _encodeInt(result.stateId.toInt()),
+      clientLoginState: _encode(utf8.encode(result.stateId.toString())),
       startLoginRequest: _encode(result.credentialRequest),
     );
   }
@@ -57,7 +58,7 @@ class FlutterOpaqueClient implements OpaqueClient {
     required String serverIdentity,
   }) async {
     final result = await opaque.clientLoginFinish(
-      stateId: _decodeInt(clientLoginState),
+      stateId: _decodeStateId(clientLoginState),
       password: utf8.encode(password),
       credentialResponse: _decode(loginResponse),
     );
@@ -67,12 +68,16 @@ class FlutterOpaqueClient implements OpaqueClient {
   String _encode(List<int> bytes) =>
       base64Url.encode(bytes).replaceAll('=', '');
 
-  String _encodeInt(int value) => _encode(utf8.encode(value.toString()));
-
   List<int> _decode(String value) {
     final padding = (4 - value.length % 4) % 4;
     return base64Url.decode(value + ('=' * padding));
   }
 
-  int _decodeInt(String value) => int.parse(utf8.decode(_decode(value)));
+  dynamic _decodeStateId(String value) {
+    final decoded = utf8.decode(_decode(value));
+    if (kIsWeb) {
+      return BigInt.parse(decoded);
+    }
+    return int.parse(decoded);
+  }
 }
