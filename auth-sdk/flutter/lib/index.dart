@@ -63,7 +63,7 @@ class NovyseAuth {
 class TokenApi {
   const TokenApi(this.manager);
   final TokenManager manager;
-  Future<String?> get() => manager.get();
+  Future<String?> get({bool forceRefresh = false}) => manager.get(forceRefresh: forceRefresh);
   void onUpdate(void Function(String?) callback) => manager.onUpdate(callback);
   void onInvalidSession(void Function() callback) =>
       manager.onInvalidSession = callback;
