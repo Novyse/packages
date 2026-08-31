@@ -1,5 +1,6 @@
 import '../account.dart';
 import '../config.dart';
+import '../opaque/flutter.dart';
 
 abstract interface class OpaqueClient {
   Future<OpaqueRegistrationStart> startRegistration(String password);
@@ -32,21 +33,20 @@ class OpaqueLoginStart {
 }
 
 class OpaqueSignUp {
-  OpaqueSignUp(this.api, this.opaque);
+  OpaqueSignUp(this.api);
   final AuthApi api;
-  final OpaqueClient? opaque;
+  final opaque = FlutterOpaqueClient();
   Future<AuthResult<JsonMap>> signUp(String username, String password,
       String name, JsonMap gdpr, String turnstileToken) async {
     try {
-      final client = opaque!;
-      final start = await client.startRegistration(password);
+      final start = await opaque.startRegistration(password);
       final challenge =
           await api.send('POST', '/signup/opaque/challenge', body: {
         'username': username,
         'registrationRequest': start.registrationRequest,
         'turnstileToken': turnstileToken
       });
-      final record = await client.finishRegistration(
+      final record = await opaque.finishRegistration(
           password: password,
           clientRegistrationState: start.clientRegistrationState,
           registrationResponse: challenge['registrationResponse'] as String,

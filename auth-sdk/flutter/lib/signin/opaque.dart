@@ -1,26 +1,25 @@
 import '../account.dart';
 import '../config.dart';
-import '../signup/opaque.dart';
+import '../opaque/flutter.dart';
 import '../token_manager.dart';
 
 class OpaqueSignIn {
-  OpaqueSignIn(this.api, this.tokens, this.platform, this.opaque);
+  OpaqueSignIn(this.api, this.tokens, this.platform);
   final AuthApi api;
   final TokenManager tokens;
   final Platform platform;
-  final OpaqueClient? opaque;
+  final opaque = FlutterOpaqueClient();
   Future<AuthResult<JsonMap>> signIn(
       String username, String password, String turnstileToken) async {
     try {
-      final client = opaque!;
-      final start = await client.startLogin(password);
+      final start = await opaque.startLogin(password);
       final challenge =
           await api.send('POST', '/signin/opaque/challenge', body: {
         'username': username,
         'ke1': start.startLoginRequest,
         'turnstileToken': turnstileToken
       });
-      final ke3 = await client.finishLogin(
+      final ke3 = await opaque.finishLogin(
           password: password,
           clientLoginState: start.clientLoginState,
           loginResponse: challenge['ke2'] as String,

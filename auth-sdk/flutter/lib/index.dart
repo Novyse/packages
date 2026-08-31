@@ -24,14 +24,12 @@ class NovyseAuthOptions {
       this.branch = Branch.production,
       this.baseUrl,
       this.storageAdapter,
-      this.client,
-      this.opaqueClient});
+      this.client});
   final Platform platform;
   final Branch branch;
   final Uri? baseUrl;
   final StorageAdapter? storageAdapter;
   final http.Client? client;
-  final OpaqueClient? opaqueClient;
 }
 
 class NovyseAuth {
@@ -41,10 +39,10 @@ class NovyseAuth {
         options.client ?? http.Client());
     final tokens = TokenManager(api, options.platform, options.storageAdapter);
     token = TokenApi(tokens);
-    signin = OpaqueSignIn(api, tokens, options.platform, options.opaqueClient);
-    signup = OpaqueSignUp(api, options.opaqueClient);
-    settings = SettingsApi(OpaqueSettings(api, tokens, options.opaqueClient),
-        SessionSettings(api, tokens));
+    signin = OpaqueSignIn(api, tokens, options.platform);
+    signup = OpaqueSignUp(api);
+    settings = SettingsApi(
+        OpaqueSettings(api, tokens), SessionSettings(api, tokens));
     account = Account(api, tokens);
     apikey = ApiKey(api, tokens);
     qrcode = QrCode(api, tokens, options.platform);

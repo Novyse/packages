@@ -22,7 +22,6 @@ final auth = NovyseAuth(NovyseAuthOptions(
   platform: Platform.mobile,
   baseUrl: Uri.parse('http://localhost:3000'), // optional, useful in tests
   storageAdapter: MySecureStorageAdapter(),
-  opaqueClient: myOpaqueClient,
 ));
 
 final result = await auth.apikey.list();

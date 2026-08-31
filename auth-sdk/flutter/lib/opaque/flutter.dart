@@ -10,11 +10,31 @@ import '../signup/opaque.dart';
 /// Messages are encoded as URL-safe Base64 without padding, as expected by
 /// the Serenity Kit backend.
 class FlutterOpaqueClient implements OpaqueClient {
-  /// Initializes the native OPAQUE library. Call this once before using it.
-  static Future<void> initialize() => opaque.RustLib.init();
+  static bool _initialized = false;
+  static Future<void>? _initFuture;
+
+  /// Initializes the native OPAQUE library.
+  /// Automatically invoked on-demand if not called manually.
+  static Future<void> initialize() async {
+    if (_initialized) return;
+    _initFuture ??= _doInit();
+    await _initFuture;
+  }
+
+  static Future<void> _doInit() async {
+    try {
+      await opaque.RustLib.init();
+      _initialized = true;
+    } catch (_) {
+      _initialized = true;
+    }
+  }
+
+  Future<void> _ensureInitialized() => initialize();
 
   @override
   Future<OpaqueRegistrationStart> startRegistration(String password) async {
+    await _ensureInitialized();
     final result = await opaque.clientRegistrationStart(
       password: utf8.encode(password),
     );
@@ -31,6 +51,7 @@ class FlutterOpaqueClient implements OpaqueClient {
     required String registrationResponse,
     required String serverIdentity,
   }) async {
+    await _ensureInitialized();
     final result = await opaque.clientRegistrationFinish(
       stateId: _decodeStateId(clientRegistrationState),
       password: utf8.encode(password),
@@ -41,6 +62,7 @@ class FlutterOpaqueClient implements OpaqueClient {
 
   @override
   Future<OpaqueLoginStart> startLogin(String password) async {
+    await _ensureInitialized();
     final result = await opaque.clientLoginStart(
       password: utf8.encode(password),
     );
@@ -57,6 +79,7 @@ class FlutterOpaqueClient implements OpaqueClient {
     required String loginResponse,
     required String serverIdentity,
   }) async {
+    await _ensureInitialized();
     final result = await opaque.clientLoginFinish(
       stateId: _decodeStateId(clientLoginState),
       password: utf8.encode(password),
