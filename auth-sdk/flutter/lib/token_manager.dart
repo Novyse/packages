@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'config.dart';
 
 abstract interface class StorageAdapter {
@@ -6,8 +8,25 @@ abstract interface class StorageAdapter {
   Future<void> removeItem(String key);
 }
 
+class DefaultSecureStorageAdapter implements StorageAdapter {
+  const DefaultSecureStorageAdapter([this._storage = const FlutterSecureStorage()]);
+  final FlutterSecureStorage _storage;
+
+  @override
+  Future<String?> getItem(String key) => _storage.read(key: key);
+
+  @override
+  Future<void> setItem(String key, String value) =>
+      _storage.write(key: key, value: value);
+
+  @override
+  Future<void> removeItem(String key) => _storage.delete(key: key);
+}
+
 class TokenManager {
-  TokenManager(this.api, this.platform, this.storage);
+  TokenManager(this.api, this.platform, [StorageAdapter? storage])
+      : storage = storage ?? (kIsWeb ? null : const DefaultSecureStorageAdapter());
+
   final AuthApi api;
   final Platform platform;
   final StorageAdapter? storage;

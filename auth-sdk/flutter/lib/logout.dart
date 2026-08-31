@@ -9,9 +9,13 @@ class Logout {
     try {
       await api.send('POST', '/logout',
           headers: authHeaders(await tokens.get()));
+      if (tokens.storage != null) {
+        await tokens.storage!.removeItem('sessionId');
+      }
       tokens.setCurrentToken(null);
       return true;
     } catch (_) {
+      tokens.setCurrentToken(null);
       return false;
     }
   }
