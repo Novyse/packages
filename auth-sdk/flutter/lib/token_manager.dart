@@ -24,8 +24,8 @@ class DefaultSecureStorageAdapter implements StorageAdapter {
 }
 
 class TokenManager {
-  TokenManager(this.api, this.platform, [StorageAdapter? storage])
-      : storage = storage ?? (kIsWeb ? null : const DefaultSecureStorageAdapter());
+  TokenManager(this.api, this.platform)
+      : storage = kIsWeb ? null : const DefaultSecureStorageAdapter();
 
   final AuthApi api;
   final Platform platform;

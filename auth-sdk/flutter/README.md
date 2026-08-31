@@ -6,11 +6,7 @@ keys, QR login, password setup, account deletion and logout.
 
 ## OPAQUE adapter
 
-There is currently no compatible OPAQUE package on pub.dev. The backend uses
-`@serenity-kit/opaque` and requires real OPAQUE messages, so this package does
-not implement cryptography or send passwords as a workaround. Provide an
-`OpaqueClient` backed by a verified Dart/native implementation before calling
-`signup.opaque`, `signin.opaque` or `settings.opaque`.
+The package includes native Rust-backed OPAQUE support for Mobile, Desktop, and Web via `flutter_opaque`.
 
 The HTTP API and all payloads are aligned with the backend routes and the
 TypeScript SDK.
@@ -19,18 +15,18 @@ TypeScript SDK.
 
 ```dart
 final auth = NovyseAuth(NovyseAuthOptions(
-  platform: Platform.mobile,
+  platform: Platform.mobile, // Platform.mobile, Platform.desktop, Platform.web
+  branch: Branch.development, // Branch.production, Branch.preview, Branch.development
   baseUrl: Uri.parse('http://localhost:3000'), // optional, useful in tests
-  storageAdapter: MySecureStorageAdapter(),
 ));
 
 final result = await auth.apikey.list();
 final jwt = await auth.token.get();
 ```
 
-For production storage, adapt `flutter_secure_storage` to `StorageAdapter`.
-The package accepts an injected `http.Client`, making endpoint tests and
-custom platform clients straightforward.
+Storage and HTTP credentials are automatically handled per platform:
+- **Mobile / Desktop**: Automatically persists `sessionId` using `FlutterSecureStorage`.
+- **Web**: Uses browser credentials (`withCredentials: true`) to automatically send and maintain `HttpOnly` session cookies.
 
 ## Validation
 

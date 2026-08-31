@@ -1,7 +1,7 @@
-import 'package:http/http.dart' as http;
 import 'account.dart';
 import 'apikey.dart';
 import 'config.dart';
+import 'http_client.dart';
 import 'logout.dart';
 import 'qrcode/index.dart';
 import 'settings/opaque.dart';
@@ -19,35 +19,37 @@ export 'opaque/flutter.dart' show FlutterOpaqueClient;
 export 'token_manager.dart' show StorageAdapter;
 
 class NovyseAuthOptions {
-  const NovyseAuthOptions(
-      {required this.platform,
-      this.branch = Branch.production,
-      this.baseUrl,
-      this.storageAdapter,
-      this.client});
+  const NovyseAuthOptions({
+    required this.platform,
+    this.branch = Branch.production,
+    this.baseUrl,
+  });
+
   final Platform platform;
   final Branch branch;
   final Uri? baseUrl;
-  final StorageAdapter? storageAdapter;
-  final http.Client? client;
 }
 
 class NovyseAuth {
   NovyseAuth(NovyseAuthOptions options) {
     final api = AuthApi(
-        options.baseUrl ?? Uri.https(authDomain(options.branch)),
-        options.client ?? http.Client());
-    final tokens = TokenManager(api, options.platform, options.storageAdapter);
+      options.baseUrl ?? Uri.https(authDomain(options.branch)),
+      createDefaultClient(options.platform),
+    );
+    final tokens = TokenManager(api, options.platform);
     token = TokenApi(tokens);
     signin = OpaqueSignIn(api, tokens, options.platform);
     signup = OpaqueSignUp(api);
     settings = SettingsApi(
-        OpaqueSettings(api, tokens), SessionSettings(api, tokens));
+      OpaqueSettings(api, tokens),
+      SessionSettings(api, tokens),
+    );
     account = Account(api, tokens);
     apikey = ApiKey(api, tokens);
     qrcode = QrCode(api, tokens, options.platform);
     logout = Logout(api, tokens).logout;
   }
+
   late final TokenApi token;
   late final OpaqueSignIn signin;
   late final OpaqueSignUp signup;
