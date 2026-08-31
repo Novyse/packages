@@ -1,8 +1,15 @@
-let wasm;
+let wasm_bindgen;
+(function() {
+    const __exports = {};
+    let script_src;
+    if (typeof document !== 'undefined' && document.currentScript !== null) {
+        script_src = new URL(document.currentScript.src, location.href).toString();
+    }
+    let wasm = undefined;
 
-const heap = new Array(128).fill(undefined);
+    const heap = new Array(128).fill(undefined);
 
-heap.push(undefined, null, true, false);
+    heap.push(undefined, null, true, false);
 
 function getObject(idx) { return heap[idx]; }
 
@@ -227,10 +234,10 @@ function __wbg_adapter_36(arg0, arg1, arg2) {
 /**
 * @returns {number}
 */
-export function frb_get_rust_content_hash() {
+__exports.frb_get_rust_content_hash = function() {
     const ret = wasm.frb_get_rust_content_hash();
     return ret;
-}
+};
 
 /**
 * @param {number} func_id
@@ -239,9 +246,9 @@ export function frb_get_rust_content_hash() {
 * @param {number} rust_vec_len_
 * @param {number} data_len_
 */
-export function frb_pde_ffi_dispatcher_primary(func_id, port_, ptr_, rust_vec_len_, data_len_) {
+__exports.frb_pde_ffi_dispatcher_primary = function(func_id, port_, ptr_, rust_vec_len_, data_len_) {
     wasm.frb_pde_ffi_dispatcher_primary(func_id, addHeapObject(port_), addHeapObject(ptr_), rust_vec_len_, data_len_);
-}
+};
 
 /**
 * @param {number} func_id
@@ -250,10 +257,10 @@ export function frb_pde_ffi_dispatcher_primary(func_id, port_, ptr_, rust_vec_le
 * @param {number} data_len_
 * @returns {any}
 */
-export function frb_pde_ffi_dispatcher_sync(func_id, ptr_, rust_vec_len_, data_len_) {
+__exports.frb_pde_ffi_dispatcher_sync = function(func_id, ptr_, rust_vec_len_, data_len_) {
     const ret = wasm.frb_pde_ffi_dispatcher_sync(func_id, addHeapObject(ptr_), rust_vec_len_, data_len_);
     return takeObject(ret);
-}
+};
 
 /**
 * @param {number} call_id
@@ -261,9 +268,9 @@ export function frb_pde_ffi_dispatcher_sync(func_id, ptr_, rust_vec_len_, data_l
 * @param {number} rust_vec_len_
 * @param {number} data_len_
 */
-export function frb_dart_fn_deliver_output(call_id, ptr_, rust_vec_len_, data_len_) {
+__exports.frb_dart_fn_deliver_output = function(call_id, ptr_, rust_vec_len_, data_len_) {
     wasm.frb_dart_fn_deliver_output(call_id, addHeapObject(ptr_), rust_vec_len_, data_len_);
-}
+};
 
 let cachedUint32Memory0 = null;
 
@@ -292,7 +299,7 @@ function passArrayJsValueToWasm0(array, malloc) {
 * @param {number} payload
 * @param {any[]} transfer
 */
-export function receive_transfer_closure(payload, transfer) {
+__exports.receive_transfer_closure = function(payload, transfer) {
     try {
         const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
         const ptr0 = passArrayJsValueToWasm0(transfer, wasm.__wbindgen_malloc);
@@ -306,16 +313,16 @@ export function receive_transfer_closure(payload, transfer) {
     } finally {
         wasm.__wbindgen_add_to_stack_pointer(16);
     }
-}
+};
 
 /**
 * @param {number} ptr
 * @returns {any}
 */
-export function frb_dart_opaque_rust2dart_decode(ptr) {
+__exports.frb_dart_opaque_rust2dart_decode = function(ptr) {
     const ret = wasm.frb_dart_opaque_rust2dart_decode(ptr);
     return takeObject(ret);
-}
+};
 
 /**
 * # Safety
@@ -325,23 +332,23 @@ export function frb_dart_opaque_rust2dart_decode(ptr) {
 * @param {any} dart_handler_port
 * @returns {number}
 */
-export function frb_dart_opaque_dart2rust_encode(handle, dart_handler_port) {
+__exports.frb_dart_opaque_dart2rust_encode = function(handle, dart_handler_port) {
     const ret = wasm.frb_dart_opaque_dart2rust_encode(addHeapObject(handle), addHeapObject(dart_handler_port));
     return ret >>> 0;
-}
+};
 
 /**
 * @param {number} ptr
 */
-export function frb_dart_opaque_drop_thread_box_persistent_handle(ptr) {
+__exports.frb_dart_opaque_drop_thread_box_persistent_handle = function(ptr) {
     wasm.frb_dart_opaque_drop_thread_box_persistent_handle(ptr);
-}
+};
 
 /**
 */
-export function wasm_start_callback() {
+__exports.wasm_start_callback = function() {
     wasm.wasm_start_callback();
-}
+};
 
 function handleError(f, args) {
     try {
@@ -356,7 +363,7 @@ const WorkerPoolFinalization = (typeof FinalizationRegistry === 'undefined')
     : new FinalizationRegistry(ptr => wasm.__wbg_workerpool_free(ptr >>> 0));
 /**
 */
-export class WorkerPool {
+class WorkerPool {
 
     static __wrap(ptr) {
         ptr = ptr >>> 0;
@@ -444,6 +451,7 @@ export class WorkerPool {
         }
     }
 }
+__exports.WorkerPool = WorkerPool;
 
 async function __wbg_load(module, imports) {
     if (typeof Response === 'function' && module instanceof Response) {
@@ -843,8 +851,8 @@ function initSync(module) {
 async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
-    if (typeof input === 'undefined') {
-        input = new URL('rust_lib_flutter_opaque_bg.wasm', import.meta.url);
+    if (typeof input === 'undefined' && typeof script_src !== 'undefined') {
+        input = script_src.replace(/\.js$/, '_bg.wasm');
     }
     const imports = __wbg_get_imports();
 
@@ -859,5 +867,6 @@ async function __wbg_init(input) {
     return __wbg_finalize_init(instance, module);
 }
 
-export { initSync }
-export default __wbg_init;
+window.wasm_bindgen = wasm_bindgen = Object.assign(__wbg_init, { initSync }, __exports);
+
+})();
