@@ -56,7 +56,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
   @override
   Future<void> executeRustInitializers() async {
-    await api.crateApiSimpleInitApp();
+    api.crateApiSimpleInitApp();
   }
 
   @override
@@ -79,54 +79,53 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<ClientLoginFinishResult> crateApiOpaqueClientLoginFinish({
+  ClientLoginFinishResult crateApiOpaqueClientLoginFinish({
     required PlatformInt64 stateId,
     required List<int> password,
     required List<int> credentialResponse,
   });
 
-  Future<ClientLoginStartResult> crateApiOpaqueClientLoginStart({
+  ClientLoginStartResult crateApiOpaqueClientLoginStart({
     required List<int> password,
   });
 
-  Future<ClientRegistrationFinishResult>
-  crateApiOpaqueClientRegistrationFinish({
+  ClientRegistrationFinishResult crateApiOpaqueClientRegistrationFinish({
     required PlatformInt64 stateId,
     required List<int> password,
     required List<int> registrationResponse,
   });
 
-  Future<ClientRegistrationStartResult> crateApiOpaqueClientRegistrationStart({
+  ClientRegistrationStartResult crateApiOpaqueClientRegistrationStart({
     required List<int> password,
   });
 
   String crateApiSimpleGreet({required String name});
 
-  Future<void> crateApiSimpleInitApp();
+  void crateApiSimpleInitApp();
 
-  Future<Uint8List> crateApiOpaqueServerLoginFinish({
+  Uint8List crateApiOpaqueServerLoginFinish({
     required PlatformInt64 stateId,
     required List<int> credentialFinalization,
   });
 
-  Future<ServerLoginStartResult> crateApiOpaqueServerLoginStart({
+  ServerLoginStartResult crateApiOpaqueServerLoginStart({
     required List<int> serverSetup,
     required List<int> passwordFile,
     required List<int> credentialRequest,
     required List<int> credentialIdentifier,
   });
 
-  Future<Uint8List> crateApiOpaqueServerRegistrationFinish({
+  Uint8List crateApiOpaqueServerRegistrationFinish({
     required List<int> registrationUpload,
   });
 
-  Future<Uint8List> crateApiOpaqueServerRegistrationStart({
+  Uint8List crateApiOpaqueServerRegistrationStart({
     required List<int> serverSetup,
     required List<int> registrationRequest,
     required List<int> credentialIdentifier,
   });
 
-  Future<Uint8List> crateApiOpaqueServerSetupNew();
+  Uint8List crateApiOpaqueServerSetupNew();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -138,24 +137,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<ClientLoginFinishResult> crateApiOpaqueClientLoginFinish({
+  ClientLoginFinishResult crateApiOpaqueClientLoginFinish({
     required PlatformInt64 stateId,
     required List<int> password,
     required List<int> credentialResponse,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_i_64(stateId, serializer);
           sse_encode_list_prim_u_8_loose(password, serializer);
           sse_encode_list_prim_u_8_loose(credentialResponse, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 1,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_client_login_finish_result,
@@ -175,20 +169,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<ClientLoginStartResult> crateApiOpaqueClientLoginStart({
+  ClientLoginStartResult crateApiOpaqueClientLoginStart({
     required List<int> password,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_u_8_loose(password, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 2,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_client_login_start_result,
@@ -208,25 +197,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<ClientRegistrationFinishResult>
-  crateApiOpaqueClientRegistrationFinish({
+  ClientRegistrationFinishResult crateApiOpaqueClientRegistrationFinish({
     required PlatformInt64 stateId,
     required List<int> password,
     required List<int> registrationResponse,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_i_64(stateId, serializer);
           sse_encode_list_prim_u_8_loose(password, serializer);
           sse_encode_list_prim_u_8_loose(registrationResponse, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 3,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_client_registration_finish_result,
@@ -246,20 +229,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<ClientRegistrationStartResult> crateApiOpaqueClientRegistrationStart({
+  ClientRegistrationStartResult crateApiOpaqueClientRegistrationStart({
     required List<int> password,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_u_8_loose(password, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 4,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_client_registration_start_result,
@@ -302,17 +280,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "greet", argNames: ["name"]);
 
   @override
-  Future<void> crateApiSimpleInitApp() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+  void crateApiSimpleInitApp() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 6,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -329,22 +302,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "init_app", argNames: []);
 
   @override
-  Future<Uint8List> crateApiOpaqueServerLoginFinish({
+  Uint8List crateApiOpaqueServerLoginFinish({
     required PlatformInt64 stateId,
     required List<int> credentialFinalization,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_i_64(stateId, serializer);
           sse_encode_list_prim_u_8_loose(credentialFinalization, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 7,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_prim_u_8_strict,
@@ -364,26 +332,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<ServerLoginStartResult> crateApiOpaqueServerLoginStart({
+  ServerLoginStartResult crateApiOpaqueServerLoginStart({
     required List<int> serverSetup,
     required List<int> passwordFile,
     required List<int> credentialRequest,
     required List<int> credentialIdentifier,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_u_8_loose(serverSetup, serializer);
           sse_encode_list_prim_u_8_loose(passwordFile, serializer);
           sse_encode_list_prim_u_8_loose(credentialRequest, serializer);
           sse_encode_list_prim_u_8_loose(credentialIdentifier, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 8,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_server_login_start_result,
@@ -413,20 +376,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<Uint8List> crateApiOpaqueServerRegistrationFinish({
+  Uint8List crateApiOpaqueServerRegistrationFinish({
     required List<int> registrationUpload,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_u_8_loose(registrationUpload, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 9,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_prim_u_8_strict,
@@ -446,24 +404,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<Uint8List> crateApiOpaqueServerRegistrationStart({
+  Uint8List crateApiOpaqueServerRegistrationStart({
     required List<int> serverSetup,
     required List<int> registrationRequest,
     required List<int> credentialIdentifier,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_list_prim_u_8_loose(serverSetup, serializer);
           sse_encode_list_prim_u_8_loose(registrationRequest, serializer);
           sse_encode_list_prim_u_8_loose(credentialIdentifier, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 10,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 10)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_prim_u_8_strict,
@@ -487,17 +440,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<Uint8List> crateApiOpaqueServerSetupNew() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+  Uint8List crateApiOpaqueServerSetupNew() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 11,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_prim_u_8_strict,

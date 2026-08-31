@@ -9,25 +9,16 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 // These functions are ignored because they are not marked as `pub`: `next_id`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `DefaultCS`
 
-/// Generate a new ServerSetup (server's static key pair + OPRF seed).
-/// Store the returned bytes securely on the server — they must persist across
-/// registrations and logins.
-Future<Uint8List> serverSetupNew() =>
+Uint8List serverSetupNew() =>
     RustLib.instance.api.crateApiOpaqueServerSetupNew();
 
-/// Step 1 (client): Start registration.
-/// Returns a state handle and the registration request to send to the server.
-Future<ClientRegistrationStartResult> clientRegistrationStart({
+ClientRegistrationStartResult clientRegistrationStart({
   required List<int> password,
 }) => RustLib.instance.api.crateApiOpaqueClientRegistrationStart(
   password: password,
 );
 
-/// Step 3 (client): Finish registration.
-/// `state_id` must match the one returned from `client_registration_start`.
-/// `registration_response` is the bytes received from the server (step 2).
-/// Consumes the stored state — do not call twice for the same `state_id`.
-Future<ClientRegistrationFinishResult> clientRegistrationFinish({
+ClientRegistrationFinishResult clientRegistrationFinish({
   required PlatformInt64 stateId,
   required List<int> password,
   required List<int> registrationResponse,
@@ -37,9 +28,7 @@ Future<ClientRegistrationFinishResult> clientRegistrationFinish({
   registrationResponse: registrationResponse,
 );
 
-/// Step 2 (server): Process the client's registration request.
-/// Returns the registration response bytes to send back to the client.
-Future<Uint8List> serverRegistrationStart({
+Uint8List serverRegistrationStart({
   required List<int> serverSetup,
   required List<int> registrationRequest,
   required List<int> credentialIdentifier,
@@ -49,26 +38,15 @@ Future<Uint8List> serverRegistrationStart({
   credentialIdentifier: credentialIdentifier,
 );
 
-/// Step 4 (server): Finalise registration.
-/// Returns the serialised password file — store this securely, keyed by the
-/// credential identifier (username, user-id, etc.).
-Future<Uint8List> serverRegistrationFinish({
-  required List<int> registrationUpload,
-}) => RustLib.instance.api.crateApiOpaqueServerRegistrationFinish(
-  registrationUpload: registrationUpload,
-);
+Uint8List serverRegistrationFinish({required List<int> registrationUpload}) =>
+    RustLib.instance.api.crateApiOpaqueServerRegistrationFinish(
+      registrationUpload: registrationUpload,
+    );
 
-/// Step 1 (client): Start login.
-/// Returns a state handle and the credential request to send to the server.
-Future<ClientLoginStartResult> clientLoginStart({
-  required List<int> password,
-}) => RustLib.instance.api.crateApiOpaqueClientLoginStart(password: password);
+ClientLoginStartResult clientLoginStart({required List<int> password}) =>
+    RustLib.instance.api.crateApiOpaqueClientLoginStart(password: password);
 
-/// Step 3 (client): Finish login.
-/// Returns the credential finalization to send to the server plus the session
-/// key and export key on success.  Returns an error if the password is wrong
-/// (the client detects this before the server).
-Future<ClientLoginFinishResult> clientLoginFinish({
+ClientLoginFinishResult clientLoginFinish({
   required PlatformInt64 stateId,
   required List<int> password,
   required List<int> credentialResponse,
@@ -78,10 +56,7 @@ Future<ClientLoginFinishResult> clientLoginFinish({
   credentialResponse: credentialResponse,
 );
 
-/// Step 2 (server): Process the client's credential request.
-/// `password_file` is what was stored by `server_registration_finish`.
-/// Returns a state handle and the credential response to send to the client.
-Future<ServerLoginStartResult> serverLoginStart({
+ServerLoginStartResult serverLoginStart({
   required List<int> serverSetup,
   required List<int> passwordFile,
   required List<int> credentialRequest,
@@ -93,11 +68,7 @@ Future<ServerLoginStartResult> serverLoginStart({
   credentialIdentifier: credentialIdentifier,
 );
 
-/// Step 4 (server): Finalise login.
-/// Returns the session key on success; the caller should compare this with the
-/// client's session key out-of-band (or use it to verify an authenticated
-/// message from the client).
-Future<Uint8List> serverLoginFinish({
+Uint8List serverLoginFinish({
   required PlatformInt64 stateId,
   required List<int> credentialFinalization,
 }) => RustLib.instance.api.crateApiOpaqueServerLoginFinish(
@@ -106,13 +77,8 @@ Future<Uint8List> serverLoginFinish({
 );
 
 class ClientLoginFinishResult {
-  /// Serialized CredentialFinalization — send this to the server.
   final Uint8List credentialFinalization;
-
-  /// Session key agreed upon with the server.
   final Uint8List sessionKey;
-
-  /// Export key derived from the password (can be used for local encryption).
   final Uint8List exportKey;
 
   const ClientLoginFinishResult({
@@ -138,10 +104,7 @@ class ClientLoginFinishResult {
 }
 
 class ClientLoginStartResult {
-  /// Opaque handle; pass this back to `client_login_finish`.
   final PlatformInt64 stateId;
-
-  /// Serialized CredentialRequest — send this to the server.
   final Uint8List credentialRequest;
 
   const ClientLoginStartResult({
@@ -162,10 +125,7 @@ class ClientLoginStartResult {
 }
 
 class ClientRegistrationFinishResult {
-  /// Serialized RegistrationUpload — send this to the server.
   final Uint8List registrationUpload;
-
-  /// Export key derived from the password (can be used for local encryption).
   final Uint8List exportKey;
 
   const ClientRegistrationFinishResult({
@@ -186,10 +146,7 @@ class ClientRegistrationFinishResult {
 }
 
 class ClientRegistrationStartResult {
-  /// Opaque handle; pass this back to `client_registration_finish`.
   final PlatformInt64 stateId;
-
-  /// Serialized RegistrationRequest — send this to the server.
   final Uint8List registrationRequest;
 
   const ClientRegistrationStartResult({
@@ -210,10 +167,7 @@ class ClientRegistrationStartResult {
 }
 
 class ServerLoginStartResult {
-  /// Opaque handle; pass this back to `server_login_finish`.
   final PlatformInt64 stateId;
-
-  /// Serialized CredentialResponse — send this to the client.
   final Uint8List credentialResponse;
 
   const ServerLoginStartResult({

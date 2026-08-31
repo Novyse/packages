@@ -1,21 +1,4 @@
 // OPAQUE password-authenticated key exchange protocol bindings.
-//
-// This module exposes the client-side and server-side operations of the OPAQUE
-// protocol. In production, only the client functions are used on the Flutter side;
-// the server functions are included for testing and demonstration.
-//
-// Protocol flow:
-//   Registration:
-//     1. client_registration_start(password) -> (state_id, registration_request)
-//     2. server_registration_start(server_setup, registration_request, credential_identifier) -> registration_response
-//     3. client_registration_finish(state_id, password, registration_response) -> registration_upload + export_key
-//     4. server_registration_finish(registration_upload) -> password_file
-//
-//   Login:
-//     1. client_login_start(password) -> (state_id, credential_request)
-//     2. server_login_start(server_setup, password_file, credential_request, credential_identifier) -> (state_id, credential_response)
-//     3. client_login_finish(state_id, password, credential_response) -> (credential_finalization, session_key, export_key)
-//     4. server_login_finish(state_id, credential_finalization) -> session_key
 
 use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex};
@@ -44,7 +27,7 @@ impl CipherSuite for DefaultCS {
 }
 
 // ---------------------------------------------------------------------------
-// In-memory state registries (states must stay in Rust memory between steps)
+// In-memory state registries
 // ---------------------------------------------------------------------------
 
 static CLIENT_REG_STORE: LazyLock<Mutex<HashMap<i64, ClientRegistration<DefaultCS>>>> =
@@ -63,43 +46,32 @@ fn next_id() -> i64 {
 }
 
 // ---------------------------------------------------------------------------
-// DTOs (returned across the FFI boundary to Dart)
+// DTOs
 // ---------------------------------------------------------------------------
 
 pub struct ClientRegistrationStartResult {
-    /// Opaque handle; pass this back to `client_registration_finish`.
     pub state_id: i64,
-    /// Serialized RegistrationRequest — send this to the server.
     pub registration_request: Vec<u8>,
 }
 
 pub struct ClientRegistrationFinishResult {
-    /// Serialized RegistrationUpload — send this to the server.
     pub registration_upload: Vec<u8>,
-    /// Export key derived from the password (can be used for local encryption).
     pub export_key: Vec<u8>,
 }
 
 pub struct ClientLoginStartResult {
-    /// Opaque handle; pass this back to `client_login_finish`.
     pub state_id: i64,
-    /// Serialized CredentialRequest — send this to the server.
     pub credential_request: Vec<u8>,
 }
 
 pub struct ServerLoginStartResult {
-    /// Opaque handle; pass this back to `server_login_finish`.
     pub state_id: i64,
-    /// Serialized CredentialResponse — send this to the client.
     pub credential_response: Vec<u8>,
 }
 
 pub struct ClientLoginFinishResult {
-    /// Serialized CredentialFinalization — send this to the server.
     pub credential_finalization: Vec<u8>,
-    /// Session key agreed upon with the server.
     pub session_key: Vec<u8>,
-    /// Export key derived from the password (can be used for local encryption).
     pub export_key: Vec<u8>,
 }
 
@@ -107,9 +79,7 @@ pub struct ClientLoginFinishResult {
 // Server Setup
 // ---------------------------------------------------------------------------
 
-/// Generate a new ServerSetup (server's static key pair + OPRF seed).
-/// Store the returned bytes securely on the server — they must persist across
-/// registrations and logins.
+#[flutter_rust_bridge::frb(sync)]
 pub fn server_setup_new() -> Result<Vec<u8>, String> {
     let mut rng = OsRng;
     let setup = ServerSetup::<DefaultCS>::new(&mut rng);
@@ -120,8 +90,7 @@ pub fn server_setup_new() -> Result<Vec<u8>, String> {
 // Registration — client side
 // ---------------------------------------------------------------------------
 
-/// Step 1 (client): Start registration.
-/// Returns a state handle and the registration request to send to the server.
+#[flutter_rust_bridge::frb(sync)]
 pub fn client_registration_start(
     password: Vec<u8>,
 ) -> Result<ClientRegistrationStartResult, String> {
@@ -139,10 +108,7 @@ pub fn client_registration_start(
     })
 }
 
-/// Step 3 (client): Finish registration.
-/// `state_id` must match the one returned from `client_registration_start`.
-/// `registration_response` is the bytes received from the server (step 2).
-/// Consumes the stored state — do not call twice for the same `state_id`.
+#[flutter_rust_bridge::frb(sync)]
 pub fn client_registration_finish(
     state_id: i64,
     password: Vec<u8>,
@@ -177,8 +143,7 @@ pub fn client_registration_finish(
 // Registration — server side
 // ---------------------------------------------------------------------------
 
-/// Step 2 (server): Process the client's registration request.
-/// Returns the registration response bytes to send back to the client.
+#[flutter_rust_bridge::frb(sync)]
 pub fn server_registration_start(
     server_setup: Vec<u8>,
     registration_request: Vec<u8>,
@@ -193,9 +158,7 @@ pub fn server_registration_start(
     Ok(result.message.serialize().to_vec())
 }
 
-/// Step 4 (server): Finalise registration.
-/// Returns the serialised password file — store this securely, keyed by the
-/// credential identifier (username, user-id, etc.).
+#[flutter_rust_bridge::frb(sync)]
 pub fn server_registration_finish(registration_upload: Vec<u8>) -> Result<Vec<u8>, String> {
     let upload = RegistrationUpload::<DefaultCS>::deserialize(&registration_upload)
         .map_err(|e| e.to_string())?;
@@ -207,8 +170,7 @@ pub fn server_registration_finish(registration_upload: Vec<u8>) -> Result<Vec<u8
 // Login — client side
 // ---------------------------------------------------------------------------
 
-/// Step 1 (client): Start login.
-/// Returns a state handle and the credential request to send to the server.
+#[flutter_rust_bridge::frb(sync)]
 pub fn client_login_start(password: Vec<u8>) -> Result<ClientLoginStartResult, String> {
     let mut rng = OsRng;
     let result = ClientLogin::<DefaultCS>::start(&mut rng, &password)
@@ -224,10 +186,7 @@ pub fn client_login_start(password: Vec<u8>) -> Result<ClientLoginStartResult, S
     })
 }
 
-/// Step 3 (client): Finish login.
-/// Returns the credential finalization to send to the server plus the session
-/// key and export key on success.  Returns an error if the password is wrong
-/// (the client detects this before the server).
+#[flutter_rust_bridge::frb(sync)]
 pub fn client_login_finish(
     state_id: i64,
     password: Vec<u8>,
@@ -263,9 +222,7 @@ pub fn client_login_finish(
 // Login — server side
 // ---------------------------------------------------------------------------
 
-/// Step 2 (server): Process the client's credential request.
-/// `password_file` is what was stored by `server_registration_finish`.
-/// Returns a state handle and the credential response to send to the client.
+#[flutter_rust_bridge::frb(sync)]
 pub fn server_login_start(
     server_setup: Vec<u8>,
     password_file: Vec<u8>,
@@ -302,10 +259,7 @@ pub fn server_login_start(
     })
 }
 
-/// Step 4 (server): Finalise login.
-/// Returns the session key on success; the caller should compare this with the
-/// client's session key out-of-band (or use it to verify an authenticated
-/// message from the client).
+#[flutter_rust_bridge::frb(sync)]
 pub fn server_login_finish(
     state_id: i64,
     credential_finalization: Vec<u8>,
