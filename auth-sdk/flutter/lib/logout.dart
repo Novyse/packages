@@ -7,8 +7,10 @@ class Logout {
   final TokenManager tokens;
   Future<bool> logout() async {
     try {
-      await api.send('POST', '/logout',
-          headers: authHeaders(await tokens.get()));
+      final token = tokens.currentToken;
+      if (token != null && token.isNotEmpty) {
+        await api.send('POST', '/logout', headers: authHeaders(token));
+      }
       if (tokens.storage != null) {
         await tokens.storage!.removeItem('sessionId');
       }

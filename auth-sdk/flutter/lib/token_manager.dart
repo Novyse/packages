@@ -35,6 +35,9 @@ class TokenManager {
   Future<String?>? _pending;
   final _listeners = <void Function(String?)>[];
   void Function()? onInvalidSession;
+
+  String? get currentToken => _token;
+
   void onUpdate(void Function(String?) callback) => _listeners.add(callback);
   void _notify() {
     for (final listener in List.of(_listeners)) listener(_token);
