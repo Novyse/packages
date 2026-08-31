@@ -823,6 +823,16 @@ function initSync(module) {
 async function __wbg_init(input) {
     if (wasm !== undefined) return wasm;
 
+    // flutter_rust_bridge 2.12.0 calls wasm_bindgen({ module_or_path: '..._bg.wasm' })
+    // (an object), but this glue was generated with wasm-bindgen 0.2.92, whose
+    // __wbg_init only accepts string | Request | URL | Response | BufferSource |
+    // Module. An object falls through to WebAssembly.instantiate(object) and throws
+    // "Argument 0 must be a buffer source". Normalize the object form to its path
+    // string so the fetch branch below handles it.
+    if (input && typeof input === 'object' && 'module_or_path' in input) {
+        input = input.module_or_path;
+    }
+
     if (typeof input === 'undefined' && typeof script_src !== 'undefined') {
         input = script_src.replace(/\.js$/, '_bg.wasm');
     }
