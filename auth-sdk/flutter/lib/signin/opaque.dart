@@ -6,7 +6,7 @@ import '../signup/opaque.dart';
 import '../token_manager.dart';
 
 class OpaqueSignIn {
-  OpaqueSignIn(this.api, this.tokens, this.platform, this.opaque);
+  OpaqueSignIn(this.api, this.tokens, this.platform, [this.opaque]);
   final AuthApi api;
   final TokenManager tokens;
   final Platform platform;
