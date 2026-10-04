@@ -65,7 +65,7 @@ class TokenApi {
   final TokenManager manager;
   Future<String?> get({bool forceRefresh = false}) => manager.get(forceRefresh: forceRefresh);
   void onUpdate(void Function(String?) callback) => manager.onUpdate(callback);
-  void onInvalidSession(void Function() callback) =>
+  void onInvalidSession(void Function(String reason) callback) =>
       manager.onInvalidSession = callback;
 }
 

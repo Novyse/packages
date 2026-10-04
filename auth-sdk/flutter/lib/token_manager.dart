@@ -1,5 +1,4 @@
 import 'dart:convert' show base64Url, jsonDecode, utf8;
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'config.dart';
 
@@ -42,7 +41,7 @@ DateTime? _extractJwtExpiry(String? token) {
 
 class TokenManager {
   TokenManager(this.api, this.platform)
-      : storage = kIsWeb ? null : const DefaultSecureStorageAdapter();
+      : storage = const DefaultSecureStorageAdapter();
 
   final AuthApi api;
   final Platform platform;
@@ -51,7 +50,8 @@ class TokenManager {
   DateTime? _expiry;
   Future<String?>? _pending;
   final _listeners = <void Function(String?)>[];
-  void Function()? onInvalidSession;
+
+  void Function(String reason)? onInvalidSession;
 
   String? get currentToken => _token;
 
@@ -87,16 +87,14 @@ class TokenManager {
   Future<String?> _fetch() async {
     try {
       final headers = <String, String>{'x-platform': platform.name};
-      if (platform != Platform.web && storage != null) {
+      if (storage != null) {
         final id = await storage!.getItem('sessionId');
         if (id != null) {
           headers['x-session-id'] = id;
         }
       }
       final data = await api.send('POST', '/token', headers: headers);
-      if (platform != Platform.web &&
-          storage != null &&
-          data['session_id'] != null) {
+      if (storage != null && data['session_id'] != null) {
         await storage!.setItem('sessionId', '${data['session_id']}');
       }
       setCurrentToken(data['token'] as String?);
@@ -104,7 +102,7 @@ class TokenManager {
     } on ApiException catch (error) {
       if (error.statusCode == 401) {
         setCurrentToken(null);
-        onInvalidSession?.call();
+        onInvalidSession?.call(error.message);
       }
       return _token;
     }
