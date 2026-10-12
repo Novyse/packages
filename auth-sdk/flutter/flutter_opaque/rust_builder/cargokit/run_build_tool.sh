@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 export PATH="$HOME/.cargo/bin:$PATH"
-export RUSTC="$HOME/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc"
+export RUSTC="${RUSTC:-rustc}"
 
 set -e
 
